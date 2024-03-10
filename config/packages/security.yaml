@@ -28,7 +28,7 @@ security:
             jwt: ~
 
     access_control:
-        - { path: ^/(token|token/refresh)$, roles: PUBLIC_ACCESS }
+        - { path: ^/(token|token/refresh|registration)$, roles: PUBLIC_ACCESS }
         - { path: ^/docs$, roles: PUBLIC_ACCESS }
         - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
 

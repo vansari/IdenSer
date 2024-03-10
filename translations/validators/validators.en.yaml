@@ -1,0 +1,4 @@
+validation_errors: 'Validation Errors'
+user_already_exists: 'There is already a user with this e-mail.'
+password_empty: 'The password cannot be empty.'
+password_short: 'The password length is too short.'

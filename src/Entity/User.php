@@ -4,14 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Post;
 use App\Repository\UserRepository;
-use App\State\PasswordHashProcessor;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -22,41 +15,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-#[UniqueEntity(fields: ['email'], message: 'user_already_exists')]
-#[ApiResource(
-    operations: [
-        new Get(
-            security: "'is_granted('ROLE_ADMIN')' or object == user",
-        ),
-        new GetCollection(
-            security: "'is_granted('ROLE_ADMIN')' or object == user",
-        ),
-        new Post(
-            uriTemplate: '/registration',
-            denormalizationContext: ['groups' => ['user:create']],
-            processor: PasswordHashProcessor::class
-        ),
-        new Patch(
-            uriTemplate: '/users/{id}/resetPassword',
-            denormalizationContext: ['groups' => ['user:update']],
-            security: "'is_granted('ROLE_ADMIN')' or object == user",
-            processor: PasswordHashProcessor::class
-        ),
-        new Delete(
-            security: "'is_granted('ROLE_ADMIN')'",
-        ),
-    ],
-    normalizationContext: ['groups' => ['user:read']]
-)]
+#[UniqueEntity(fields: 'email', message: 'user_already_exists', groups: ['user:create'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups(['user:create',])]
+    #[Groups(['user:create', 'user:read'])]
     #[Assert\Email]
     private ?string $email = null;
 
@@ -70,8 +39,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
 
-    #[Groups(['user:create','user:update',])]
+    #[Groups(['user:create', 'user:update'])]
     #[SerializedName('password')]
+    #[Assert\PasswordStrength(minScore: Assert\PasswordStrength::STRENGTH_STRONG)]
     private ?string $plainPassword = null;
 
     public function getId(): ?int
