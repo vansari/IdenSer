@@ -26,7 +26,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 180, unique: true)]
     #[Groups(['user:create', 'user:read'])]
-    #[Assert\Email]
+    #[Assert\Email(groups: ['user:create'],)]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -41,7 +41,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[Groups(['user:create', 'user:update'])]
     #[SerializedName('password')]
-    #[Assert\PasswordStrength(minScore: Assert\PasswordStrength::STRENGTH_STRONG)]
+    #[Assert\NotBlank(message: 'password_empty', groups: ['user:create', 'user:update'],)]
+    #[Assert\Length(min: 12, minMessage: 'password_min_message', groups: ['user:create', 'user:update'],)]
+    #[Assert\PasswordStrength(
+        minScore: Assert\PasswordStrength::STRENGTH_STRONG,
+        groups: ['user:create', 'user:update'],
+        message: 'password_weakness'
+    )]
     private ?string $plainPassword = null;
 
     public function getId(): ?int

@@ -1,2 +1,5 @@
 validation_errors: 'Validierungsfehler'
 user_already_exists: 'Es existiert schon ein User mit dieser E-Mail.'
+password_empty: 'Das Passwort darf nicht leer sein.'
+password_min_message: 'Das Passwort ist zu kurz.'
+password_weakness: 'Das Passwort ist zu schwach.'

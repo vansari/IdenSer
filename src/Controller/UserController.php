@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Event\User\RegistrationEvent;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,12 +32,19 @@ class UserController extends AbstractController
         $errors = $validator->validate($user, groups: ['user:create']);
 
         if ($errors->count()) {
-            $message = $this->translator->trans('validation_errors', domain: 'validators') . PHP_EOL;
+            $messages = [];
+
             /** @var ConstraintViolationInterface $error */
             foreach ($errors as $error) {
-                $message .= $error->getMessage() . PHP_EOL;
+                if ($error->getConstraint() instanceof UniqueEntity) {
+                    $messages = [$error->getMessage()];
+                    break;
+                }
+                $messages[] = $error->getMessage();
             }
-            throw new UnprocessableEntityHttpException($message);
+            array_unshift($messages, $this->translator->trans('validation_errors', domain: 'validators'));
+
+            throw new UnprocessableEntityHttpException(implode(PHP_EOL, $messages));
         }
 
         $userRegistrationEventDispatcher->dispatch(new RegistrationEvent($user));
